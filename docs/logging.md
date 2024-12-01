@@ -49,7 +49,7 @@ by default, all plugin commands are blocked and cannot be accessed. You must def
 
 {
   "permissions": [
-    ...,
+    ...
     "log:default"
   ]
 }

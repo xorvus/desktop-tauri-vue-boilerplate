@@ -9,6 +9,7 @@ import {Menu} from "@tauri-apps/api/menu/menu";
 import {PhysicalPosition} from "@tauri-apps/api/dpi";
 import SecretStore from "./utils/SecretStore.ts";
 import Logger from "./utils/Logger.ts";
+import {check} from "@tauri-apps/plugin-updater";
 
 let status = ref(true)
 let openDevtools = ref(false)
@@ -70,6 +71,43 @@ document.addEventListener('contextmenu', async (event) => {
 
 });
 
+const checkUpdate = async () => {
+  const update = await check({
+    headers: {
+      Authorization: "Bearer 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",
+      Accept: "application/octet-stream"
+    }
+  });
+
+  if (update) {
+    console.log(
+        `found update ${update.version} from ${update.date} with notes ${update.body}`
+    );
+    let downloaded = 0;
+    let contentLength = 0;
+    // alternatively we could also call update.download() and update.install() separately
+    await update.downloadAndInstall((event) => {
+      switch (event.event) {
+        case 'Started':
+          contentLength = event.data.contentLength;
+          console.log(`started downloading ${event.data.contentLength} bytes`);
+          break;
+        case 'Progress':
+          downloaded += event.data.chunkLength;
+          console.log(`downloaded ${downloaded} from ${contentLength}`);
+          break;
+        case 'Finished':
+          console.log('download finished');
+          break;
+      }
+    });
+
+    console.log('update installed');
+    // await relaunch();
+  }
+}
+
+
 onMounted(async () => {
   invoke("check_connection", { domain: "8.8.8.8" }).then()
 
@@ -91,8 +129,10 @@ onMounted(async () => {
       <button @click="restartPC" class="bg-orange-500 text-white px-5 py-2 rounded">Restart</button>
     </div>
     <div class="text-center mt-6">Status: <span>{{status ? "Online": "Offline"}}</span></div>
-    <div class="flex justify-center">
+    <div class="flex justify-center gap-2">
       <button @click="toggleDevtools" class="bg-blue-500 text-white px-5 py-2 rounded">Toggle Devtools</button>
+
+      <button @click="checkUpdate" class="bg-black text-white px-5 py-2 rounded">Check Update</button>
     </div>
   </main>
 </template>

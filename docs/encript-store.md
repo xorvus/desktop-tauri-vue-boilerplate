@@ -52,7 +52,7 @@ By default all potentially dangerous plugin commands and scopes are blocked and 
 ``` json
 {
   "permissions": [
-    ...,
+    ...
     "stronghold:default",
   ]
 }

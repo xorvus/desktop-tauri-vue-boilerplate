@@ -36,7 +36,7 @@ By default all potentially dangerous plugin commands and scopes are blocked and 
 
 {
   "permissions": [
-    ...,
+    ...
     "autostart:allow-enable",
     "autostart:allow-disable",
     "autostart:allow-is-enabled"

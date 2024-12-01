@@ -11,7 +11,7 @@ Store is a simple key-value store that uses JSON file to store data. It is used 
 ``` json
 {
   "permissions": [
-    ...,
+    ...
     "store:default",
   ]
 }

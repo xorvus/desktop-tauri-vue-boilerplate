@@ -20,7 +20,7 @@ To use fullscreen mode, you need to add the following permission to the capabili
 ``` json
 {
   "permissions": [
-    ...,
+    ...
     "core:window:allow-set-fullscreen",
     "core:window:allow-is-fullscreen"
   ]

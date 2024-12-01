@@ -4,7 +4,7 @@
 
 ###### signer generate
 ```bash
-pnpm tauri signer generate -w ~/.tauri/myapp.key
+bunx tauri signer generate -w ~/.tauri/myapp.key
 ```
 
 ###### environment
@@ -77,7 +77,7 @@ by default, all plugin commands are blocked and cannot be accessed. You must def
 
 {
   "permissions": [
-    ...,
+    ...
     "updater:default",
   ]
 }

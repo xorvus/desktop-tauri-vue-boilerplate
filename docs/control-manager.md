@@ -18,7 +18,7 @@ To use shutdown and reboot you need to add the following permission to the capab
 ``` json
 {
   "permissions": [
-    ...,
+    ...
     "power-manager:allow-shutdown",
     "power-manager:allow-reboot"
   ]

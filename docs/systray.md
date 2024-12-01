@@ -33,7 +33,7 @@ To use await defaultWindowIcon() to display an icon, ensure the necessary permis
 ``` json
 {
   "permissions": [
-    ...,
+    ...
     "core:app:allow-default-window-icon",
   ]
 }
