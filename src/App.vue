@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import SettingLayout from "./layouts/settings/SettingLayout.vue";
 import {getCurrentWindow, LogicalPosition} from "@tauri-apps/api/window";
-import {shutdown, reboot} from "tauri-plugin-power-manager-api";
+import {reboot, shutdown} from "tauri-plugin-power-manager-api";
 import {invoke} from "@tauri-apps/api/core";
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {listen} from "@tauri-apps/api/event";
 import {Menu} from "@tauri-apps/api/menu/menu";
-import {PhysicalPosition} from "@tauri-apps/api/dpi";
 import SecretStore from "./utils/SecretStore.ts";
 import Logger from "./utils/Logger.ts";
 import {check} from "@tauri-apps/plugin-updater";
-
+import {relaunch} from "@tauri-apps/plugin-process";
+import Database from "./utils/Database.ts";
 let status = ref(true)
 let openDevtools = ref(false)
+let name = ref("")
+const users = ref([]);
 
 window.addEventListener("keydown", async (e) => {
   if(e.key == "F11"){
@@ -48,11 +50,36 @@ const toggleDevtools = () => {
   }
 }
 
+const savetoDB = async () => {
+  if(!name.value) return
+  const db = await Database.init("test.db");
+  await db.execute(
+      "INSERT into users (name) VALUES ($1)",
+      [name.value],
+  );
+
+  name.value = ''
+  await fetchUser()
+}
+
+const fetchUser = async () => {
+  const db = await Database.init("test.db");
+  users.value = await db.select("SELECT * FROM users");
+}
+
+const deleteUser = async (id: number) => {
+  const db = await Database.init("test.db");
+  await db.execute(
+      "DELETE FROM users WHERE id = $1",
+      [id],
+  );
+  await fetchUser()
+}
 
 document.addEventListener('contextmenu', async (event) => {
   if(window.__TAURI_INTERNALS__){
     event.preventDefault(); // Prevent the default browser context menu
-    const window = getCurrentWindow();
+    const w = getCurrentWindow();
     const items: any = [
       { id: "reload", text: "Reload", action: () => refresh() },
       { item: "Separator" },
@@ -66,9 +93,14 @@ document.addEventListener('contextmenu', async (event) => {
     const menu = await Menu.new({
       items: items
     });
-    menu.popup(new LogicalPosition(event.screenX,event.screenY), window).then()
-  }
 
+    const position = await invoke("is_dev")
+        ? new LogicalPosition(event.screenX, event.screenY)
+        : new LogicalPosition(event.x, event.y);
+
+    await menu.popup(position, w);
+
+  }
 });
 
 const checkUpdate = async () => {
@@ -103,7 +135,7 @@ const checkUpdate = async () => {
     });
 
     console.log('update installed');
-    // await relaunch();
+    await relaunch();
   }
 }
 
@@ -116,6 +148,8 @@ onMounted(async () => {
   const data = await ss.getKey<string>("test")
   Logger.info(data)
   await ss.save()
+
+  await fetchUser()
 })
 
 </script>
@@ -133,6 +167,29 @@ onMounted(async () => {
       <button @click="toggleDevtools" class="bg-blue-500 text-white px-5 py-2 rounded">Toggle Devtools</button>
 
       <button @click="checkUpdate" class="bg-black text-white px-5 py-2 rounded">Check Update</button>
+    </div>
+
+    <div class="flex flex-col items-center mt-6">
+      <h1 class="font-black">SQLite</h1>
+      <input type="text" v-model="name" placeholder="name" class="border rounded p-2 my-2 border-black"/>
+      <button  @click="savetoDB" class="bg-green-500 text-white px-5 py-2 rounded">Save</button>
+
+      <table>
+        <thead>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="border" v-for="user in users">
+          <td class="border p-2">{{user.id}}</td>
+          <td class="border p-2">{{user.name}}</td>
+          <td class="border p-2"><button @click="deleteUser(user.id)" class="bg-red-500 text-white px-3 py-1 m-2 rounded">Delete</button></td>
+        </tr>
+        </tbody>
+      </table>
     </div>
   </main>
 </template>

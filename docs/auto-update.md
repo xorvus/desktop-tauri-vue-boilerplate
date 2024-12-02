@@ -67,6 +67,46 @@ For guide type install mode on windows [installMode](https://tauri.app/plugin/up
 
 ### Usage
 
+###### src/App.vue
+```typescript
+import {check} from "@tauri-apps/plugin-updater";
+import {relaunch} from "@tauri-apps/plugin-process";
+
+const update = await check({
+    headers: {
+        Authorization: "Bearer xxxxxxx",
+        Accept: "application/octet-stream"
+    }
+});
+
+if (update) {
+    console.log(
+        `found update ${update.version} from ${update.date} with notes ${update.body}`
+    );
+    let downloaded = 0;
+    let contentLength = 0;
+    // alternatively we could also call update.download() and update.install() separately
+    await update.downloadAndInstall((event) => {
+        switch (event.event) {
+            case 'Started':
+                contentLength = event.data.contentLength;
+                console.log(`started downloading ${event.data.contentLength} bytes`);
+                break;
+            case 'Progress':
+                downloaded += event.data.chunkLength;
+                console.log(`downloaded ${downloaded} from ${contentLength}`);
+                break;
+            case 'Finished':
+                console.log('download finished');
+                break;
+        }
+    });
+
+    console.log('update installed');
+    await relaunch();
+}
+
+```
 
 
 ### Permissions
@@ -79,11 +119,12 @@ by default, all plugin commands are blocked and cannot be accessed. You must def
   "permissions": [
     ...
     "updater:default",
+    "process:default",
   ]
 }
 ```
 
 ### Referance
 [Updater](https://tauri.app/plugin/updater/)
-
+[Process](https://tauri.app/plugin/process/)
 

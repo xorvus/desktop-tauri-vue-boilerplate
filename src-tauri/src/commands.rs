@@ -59,6 +59,10 @@ async fn ping(app: AppHandle, domain: String, status: &mut bool) {
 }
 
 #[command]
-pub fn get_environment_variable(key: &str) -> String {
-    std::env::var(key).unwrap_or_else(|_| "".to_string())
+pub fn is_dev() -> bool {
+    if cfg!(dev) {
+        true
+    } else {
+        false
+    }
 }

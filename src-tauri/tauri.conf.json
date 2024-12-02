@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "desktop-tauri-boilerplate",
-        "width": 800,
-        "height": 600
+        "width": 900,
+        "height": 700
       }
     ],
     "security": {
@@ -42,6 +42,9 @@
       "windows": {
         "installMode": "passive"
       }
+    },
+    "sql": {
+      "preload": ["sqlite:test.db"]
     }
   }
 }

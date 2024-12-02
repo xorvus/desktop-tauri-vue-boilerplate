@@ -1,4 +1,5 @@
 mod commands;
+mod migrations;
 
 use tauri::Manager;
 use tauri_plugin_autostart::MacosLauncher;
@@ -6,6 +7,10 @@ use tauri_plugin_autostart::MacosLauncher;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_sql::Builder::new()
+            .add_migrations("sqlite:test.db", migrations::get_migrations())
+            .build())
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let salt_path = app
@@ -48,7 +53,7 @@ pub fn run() {
             commands::get_version,
             commands::check_connection,
             commands::devtools,
-            commands::get_environment_variable
+            commands::is_dev
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
